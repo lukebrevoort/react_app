@@ -6,27 +6,16 @@ import (
 	"strings"
 )
 
-/*
-import "net/http"
-
-func handleCORS(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// Other headers
-}
-*/
-
 func eval(expression string) string {
 	tokens := tokenize(expression)
 	result := evaluate(tokens)
 	return fmt.Sprintf("%.2f", result)
-
 }
 
 func tokenize(expression string) []string {
 	expression = strings.ReplaceAll(expression, " ", "")
 	var tokens []string
 	var current string
-
 	for _, char := range expression {
 		if char >= '0' && char <= '9' || char == '.' {
 			current += string(char)
@@ -38,9 +27,10 @@ func tokenize(expression string) []string {
 			tokens = append(tokens, string(char))
 		}
 	}
-
+	if current != "" {
+		tokens = append(tokens, current)
+	}
 	return tokens
-
 }
 
 func evaluate(tokens []string) float64 {
@@ -51,22 +41,23 @@ func evaluate(tokens []string) float64 {
 		if num, err := strconv.ParseFloat(token, 64); err == nil {
 			numbers = append(numbers, num)
 		} else {
-			for len(operators) > 0 && presedence(operators[len(operators)-1]) > presedence(token) {
+			for len(operators) > 0 && precedence(operators[len(operators)-1]) >= precedence(token) {
 				applyOperation(&numbers, operators[len(operators)-1])
 				operators = operators[:len(operators)-1]
 			}
 			operators = append(operators, token)
 		}
-
 	}
+
 	for len(operators) > 0 {
 		applyOperation(&numbers, operators[len(operators)-1])
 		operators = operators[:len(operators)-1]
 	}
+
 	return numbers[0]
 }
 
-func presedence(op string) int {
+func precedence(op string) int {
 	switch op {
 	case "+", "-":
 		return 1
