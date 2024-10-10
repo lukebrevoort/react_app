@@ -1,41 +1,161 @@
 // src/App.js
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios"; // Import Axios
+
+import Wrapper from "./componentsCalc/Wrapper";
+import Screen from "./componentsCalc/Screen";
+import ButtonBox from "./componentsCalc/ButtonBox";
+import Button from "./componentsCalc/Button";
+
+const btnValues = [
+  ["C", "+-", "%", "/"],
+  [7, 8, 9, "X"],
+  [4, 5, 6, "-"],
+  [1, 2, 3, "+"],
+  [0, ".", "="],
+];
+
+const toLocaleString = (num) =>
+  String(num).replace(/(?<!\..*)(\d)(?=(?:\d{3})+(?:\.|$))/g, "$1 ");
+
+const removeSpaces = (num) => num.toString().replace(/\s/g, "");
 
 const App = () => {
-  const [input, setInput] = useState('');
-  const [result, setResult] = useState(null);
+  let [calc, setCalc] = useState({
+    sign: "",
+    num: 0,
+    res: 0,
+  });
 
-  const handleInput = (e) => {
-    setInput(e.target.value);
-  };
+  const numClickHandler = (e) => {
+    e.preventDefault();
+    const value = e.target.innerHTML;
 
-  const calculate = async () => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/calculate', {
-        expression: input
+    if (removeSpaces(calc.num).length < 16) {
+      setCalc({
+        ...calc,
+        num:
+          calc.num === 0 && value === "0"
+            ? "0"
+            : removeSpaces(calc.num) % 1 === 0
+            ? toLocaleString(Number(removeSpaces(calc.num + value)))
+            : toLocaleString(calc.num + value),
+        res: !calc.sign ? 0 : calc.res,
       });
-      setResult(response.data.result);
-    } catch (error) {
-      console.error('Error calculating:', error);
-      setResult('Error');
     }
   };
 
+  const commaClickHandler = (e) => {
+    e.preventDefault();
+    const value = e.target.innerHTML;
+
+    setCalc({
+      ...calc,
+      num: !calc.num.toString().includes(".") ? calc.num + value : calc.num,
+    });
+  };
+
+  const signClickHandler = (e) => {
+    e.preventDefault();
+    const value = e.target.innerHTML;
+
+    setCalc({
+      ...calc,
+      sign: value,
+      res: !calc.res && calc.num ? calc.num : calc.res,
+      num: 0,
+    });
+  };
+
+  const equalsClickHandler = async () => {
+    if (calc.sign && calc.num) {
+      const expression = `${removeSpaces(calc.res)} ${calc.sign} ${removeSpaces(calc.num)}`;
+      
+      try {
+        const response = await axios.post("http://localhost:5001/api/calculate", {
+          expression,
+        });
+
+        setCalc({
+          ...calc,
+          res: response.data.result, // Assuming your Go backend returns a result property
+          sign: "",
+          num: 0,
+        });
+      } catch (error) {
+        console.error("Error calculating expression:", error);
+        setCalc({
+          ...calc,
+          res: "Error",
+          sign: "",
+          num: 0,
+        });
+      }
+    }
+  };
+
+  const invertClickHandler = () => {
+    setCalc({
+      ...calc,
+      num: calc.num ? toLocaleString(removeSpaces(calc.num) * -1) : 0,
+      res: calc.res ? toLocaleString(removeSpaces(calc.res) * -1) : 0,
+      sign: "",
+    });
+  };
+
+  const percentClickHandler = () => {
+    let num = calc.num ? parseFloat(removeSpaces(calc.num)) : 0;
+    let res = calc.res ? parseFloat(removeSpaces(calc.res)) : 0;
+
+    setCalc({
+      ...calc,
+      num: (num /= Math.pow(100, 1)),
+      res: (res /= Math.pow(100, 1)),
+      sign: "",
+    });
+  };
+
+  const resetClickHandler = () => {
+    setCalc({
+      ...calc,
+      sign: "",
+      num: 0,
+      res: 0,
+    });
+  };
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>GoLang Calculator</h1>
-      <input 
-        type="text" 
-        value={input} 
-        onChange={handleInput} 
-        placeholder="Enter expression"
-        style={{ marginRight: '10px', padding: '5px' }}
-      />
-      <button onClick={calculate} style={{ padding: '5px' }}>Calculate</button>
-      <h3>Result: {result}</h3>
-    </div>
+    <Wrapper>
+      <Screen value={calc.num ? calc.num : calc.res} />
+      <ButtonBox>
+        {btnValues.flat().map((btn, i) => {
+          return (
+            <Button
+              key={i}
+              className={btn === "=" ? "equals" : ""}
+              value={btn}
+              onClick={
+                btn === "C"
+                  ? resetClickHandler
+                  : btn === "+-"
+                  ? invertClickHandler
+                  : btn === "%"
+                  ? percentClickHandler
+                  : btn === "="
+                  ? equalsClickHandler
+                  : btn === "/" || btn === "X" || btn === "-" || btn === "+"
+                  ? signClickHandler
+                  : btn === "."
+                  ? commaClickHandler
+                  : numClickHandler
+              }
+            />
+          );
+        })}
+      </ButtonBox>
+    </Wrapper>
   );
 };
 
 export default App;
+

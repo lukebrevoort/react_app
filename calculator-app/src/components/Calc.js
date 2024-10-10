@@ -12,13 +12,14 @@ const Calculator = () => {
 
   const calculate = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/calculate', { expression: input });
+      const response = await axios.post('http://localhost:5001/api/calculate', { expression: input });
       setResult(response.data.result);
     } catch (error) {
       console.error('Error calculating:', error);
       setResult('Error');
     }
   };
+
 
   return (
     <div>
@@ -29,5 +30,6 @@ const Calculator = () => {
     </div>
   );
 };
+
 
 export default Calculator;

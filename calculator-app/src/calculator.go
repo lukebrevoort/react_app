@@ -8,40 +8,56 @@ import (
 	"strings"
 )
 
-type RequestBody struct {
-	Expression string `json:"expression"`
-}
-
-type ResponseBody struct {
+// Response structure for the calculation result
+type Response struct {
 	Result string `json:"result"`
 }
 
 func main() {
-	http.HandleFunc("/api/calculate", calculateHandler)
-	fmt.Println("Server running on port 5000...")
-	http.ListenAndServe(":5000", nil)
+	http.HandleFunc("/api/calculate", corsMiddleware(calculateHandler))
+
+	// Start the server
+	fmt.Println("Server is running on port 1")
+	http.ListenAndServe(":5001", nil)
+
+}
+
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Allows all origins
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		// Handle preflight request
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent) // Respond with 204 No Content
+			return
+		}
+
+		next(w, r)
+	}
 }
 
 func calculateHandler(w http.ResponseWriter, r *http.Request) {
-	// Makes sure this is a POST
-	if r.Method != http.MethodPost {
+	if r.Method == http.MethodPost {
+		var requestBody struct {
+			Expression string `json:"expression"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			http.Error(w, "Invalid request", http.StatusBadRequest)
+			return
+		}
+
+		result := eval(requestBody.Expression)
+
+		// Create response
+		response := Response{Result: result}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
 	}
-
-	var reqBody RequestBody
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		http.Error(w, "Error parsing request body", http.StatusBadRequest)
-		return
-	}
-
-	result := eval(reqBody.Expression)
-
-	resBody := ResponseBody{Result: result}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resBody)
-
 }
 
 func eval(expression string) string {
