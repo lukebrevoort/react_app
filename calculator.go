@@ -1,15 +1,47 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 )
 
+type RequestBody struct {
+	Expression string `json:"expression"`
+}
+
+type ResponseBody struct {
+	Result string `json:"result"`
+}
+
 func main() {
-	fmt.Println(eval("2 + 3 * 4"))
-	fmt.Println(eval("10 / 2 - 3"))
-	fmt.Println(eval("5.5 + 4.5"))
+	http.HandleFunc("/api/calculate", calculateHandler)
+	fmt.Println("Server running on port 5000...")
+	http.ListenAndServe(":5000", nil)
+}
+
+func calculateHandler(w http.ResponseWriter, r *http.Request) {
+	// Makes sure this is a POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var reqBody RequestBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		http.Error(w, "Error parsing request body", http.StatusBadRequest)
+		return
+	}
+
+	result := eval(reqBody.Expression)
+
+	resBody := ResponseBody{Result: result}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resBody)
+
 }
 
 func eval(expression string) string {

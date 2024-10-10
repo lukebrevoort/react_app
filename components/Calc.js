@@ -1,4 +1,4 @@
-// src/components/Calculator.js
+// src/components/Calc.js
 import React, { useState } from 'react';
 import axios from 'axios';
 
