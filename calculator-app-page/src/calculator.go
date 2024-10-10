@@ -48,7 +48,7 @@ func calculateHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-
+		//fmt.Println(requestBody.Expression)
 		result := eval(requestBody.Expression)
 
 		// Create response
