@@ -17,7 +17,7 @@ func main() {
 	http.HandleFunc("/api/calculate", corsMiddleware(calculateHandler))
 
 	// Start the server
-	fmt.Println("Server is running on port 1")
+	fmt.Println("Server is running on port 5001")
 	http.ListenAndServe(":5001", nil)
 
 }
