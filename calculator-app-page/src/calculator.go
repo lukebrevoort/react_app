@@ -48,7 +48,8 @@ func calculateHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-		//fmt.Println(requestBody.Expression)
+
+		fmt.Println(requestBody.Expression)
 		result := eval(requestBody.Expression)
 
 		// Create response
@@ -71,8 +72,8 @@ func tokenize(expression string) []string {
 	expression = strings.ReplaceAll(expression, " ", "")
 	var tokens []string
 	var current string
-	for _, char := range expression {
-		if char >= '0' && char <= '9' || char == '.' {
+	for i, char := range expression {
+		if char >= '0' && char <= '9' || char == '.' || (char == '-' && (i == 0 || expression[i-1] == '+' || expression[i-1] == '-' || expression[i-1] == '*' || expression[i-1] == '/')) {
 			current += string(char)
 		} else {
 			if current != "" {
