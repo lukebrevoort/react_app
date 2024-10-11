@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+.nav-tabs {
+  display: flex;
+  list-style-type: none;
+  background-color: #f1f1f1;
+  padding: 0;
+}
+
+.nav-tabs li {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  background-color: #e1e1e1;
+  margin-right: 2px;
+  cursor: pointer;
+}
+
+.nav-tabs li:hover {
+  background-color: #d1d1d1;
+}
+
+.nav-tabs li a {
+  text-decoration: none;
+  color: black;
+}
+

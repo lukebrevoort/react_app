@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const RotatingCat = () => {
+const Cat = () => {
   const [rotation, setRotation] = useState(0);
 
   const rotateCat = () => {
@@ -19,4 +19,4 @@ const RotatingCat = () => {
   );
 };
 
-export default RotatingCat;
+export default Cat;

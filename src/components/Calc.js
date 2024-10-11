@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState } from "react";
 import axios from "axios"; // Import Axios
 
@@ -6,6 +5,9 @@ import Wrapper from "./componentsCalc/Wrapper";
 import Screen from "./componentsCalc/Screen";
 import ButtonBox from "./componentsCalc/ButtonBox";
 import Button from "./componentsCalc/Button";
+
+
+
 
 const btnValues = [
   ["C", "+-", "%", "/"],
@@ -20,7 +22,7 @@ const toLocaleString = (num) =>
 
 const removeSpaces = (num) => num.toString().replace(/\s/g, "");
 
-const App = () => {
+const Calculator = () => {
   let [calc, setCalc] = useState({
     sign: "",
     num: 0,
@@ -157,5 +159,4 @@ const App = () => {
   );
 };
 
-export default App;
-
+export default Calculator;
